@@ -397,7 +397,7 @@ def convert(price_path, template_path, output_path,
             item, name, qty_unit = items[idx]
 
             c5_text = c5_texts[idx]
-            odd_text = [str(seq), item, qty_unit, '', '', c5_text, '', '', '', '']
+            odd_text = [str(seq), item, '', qty_unit, '', c5_text, '', '', '', '']
             even_text = ['', name, '', '', '', '', '', '', '', '']
 
             # 奇列
