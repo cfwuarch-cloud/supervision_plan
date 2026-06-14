@@ -63,6 +63,7 @@ C5_WIDTH_TWIP = 506
 TITLE_H_TWIP = 971
 PAGE_H_TWIP = 13958
 DATA_AVAIL_TWIP = 10600
+HEADER_H_TWIP = 1100  # 三行表頭佔用高度（title 480 + 工程名稱 280 + 頁尾 280 + 間隙60）
 
 
 def clean_text(text):
@@ -183,6 +184,13 @@ def make_cell(parent, text, ci, merge_restart=None):
             vm.set(qn('w:val'), 'restart')
     vAlign = etree.SubElement(tcPr, qn('w:vAlign'))
     vAlign.set(qn('w:val'), 'center')
+    tcBorders = etree.SubElement(tcPr, qn('w:tcBorders'))
+    for edge in ('top', 'left', 'bottom', 'right'):
+        be = etree.SubElement(tcBorders, qn('w:' + edge))
+        be.set(qn('w:val'), 'single')
+        be.set(qn('w:sz'), '8')
+        be.set(qn('w:space'), '0')
+        be.set(qn('w:color'), '000000')
     p = etree.SubElement(tc, qn('w:p'))
     pPr = etree.SubElement(p, qn('w:pPr'))
     spacing = etree.SubElement(pPr, qn('w:spacing'))
@@ -209,6 +217,76 @@ def add_page_break(body):
     pb_r = etree.SubElement(pb_p, qn('w:r'))
     pb_br = etree.SubElement(pb_r, qn('w:br'))
     pb_br.set(qn('w:type'), 'page')
+
+
+PROJECT_NAME = '臺南市政府社會局委託辦理北區成德公設民營托嬰中心室內裝修統包工程'
+
+
+def add_header(body, page_num, total_pages):
+    """加入表格上方三行表頭"""
+    # 第1行：主標題
+    p1 = etree.SubElement(body, qn('w:p'))
+    pPr1 = etree.SubElement(p1, qn('w:pPr'))
+    jc1 = etree.SubElement(pPr1, qn('w:jc'))
+    jc1.set(qn('w:val'), 'center')
+    sp1 = etree.SubElement(pPr1, qn('w:spacing'))
+    sp1.set(qn('w:line'), '480')
+    sp1.set(qn('w:lineRule'), 'exact')
+    r1 = etree.SubElement(p1, qn('w:r'))
+    rPr1 = etree.SubElement(r1, qn('w:rPr'))
+    rFonts1 = etree.SubElement(rPr1, qn('w:rFonts'))
+    rFonts1.set(qn('w:ascii'), 'Arial')
+    rFonts1.set(qn('w:hAnsi'), 'Arial')
+    rFonts1.set(qn('w:eastAsia'), '標楷體')
+    etree.SubElement(rPr1, qn('w:b'))
+    sz1 = etree.SubElement(rPr1, qn('w:sz'))
+    sz1.set(qn('w:val'), '28')
+    szCs1 = etree.SubElement(rPr1, qn('w:szCs'))
+    szCs1.set(qn('w:val'), '28')
+    spc1 = etree.SubElement(rPr1, qn('w:spacing'))
+    spc1.set(qn('w:val'), '6')
+    t1 = etree.SubElement(r1, qn('w:t'))
+    t1.text = f'表5-2 材料設備檢(試)驗管制總表-{page_num}'
+
+    # 第2行：工程名稱
+    p2 = etree.SubElement(body, qn('w:p'))
+    pPr2 = etree.SubElement(p2, qn('w:pPr'))
+    jc2 = etree.SubElement(pPr2, qn('w:jc'))
+    jc2.set(qn('w:val'), 'left')
+    r2 = etree.SubElement(p2, qn('w:r'))
+    rPr2 = etree.SubElement(r2, qn('w:rPr'))
+    rFonts2 = etree.SubElement(rPr2, qn('w:rFonts'))
+    rFonts2.set(qn('w:ascii'), 'Arial')
+    rFonts2.set(qn('w:hAnsi'), 'Arial')
+    rFonts2.set(qn('w:eastAsia'), '標楷體')
+    sz2 = etree.SubElement(rPr2, qn('w:sz'))
+    sz2.set(qn('w:val'), '24')
+    szCs2 = etree.SubElement(rPr2, qn('w:szCs'))
+    szCs2.set(qn('w:val'), '24')
+    t2 = etree.SubElement(r2, qn('w:t'))
+    t2.text = f'工程名稱：{PROJECT_NAME}'
+
+    # 第3行：頁碼／表單編號
+    p3 = etree.SubElement(body, qn('w:p'))
+    pPr3 = etree.SubElement(p3, qn('w:pPr'))
+    jc3 = etree.SubElement(pPr3, qn('w:jc'))
+    jc3.set(qn('w:val'), 'left')
+    sp3 = etree.SubElement(pPr3, qn('w:spacing'))
+    sp3.set(qn('w:line'), '240')
+    sp3.set(qn('w:lineRule'), 'atLeast')
+    r3 = etree.SubElement(p3, qn('w:r'))
+    rPr3 = etree.SubElement(r3, qn('w:rPr'))
+    rFonts3 = etree.SubElement(rPr3, qn('w:rFonts'))
+    rFonts3.set(qn('w:ascii'), 'Times New Roman')
+    rFonts3.set(qn('w:hAnsi'), 'Times New Roman')
+    rFonts3.set(qn('w:eastAsia'), '標楷體')
+    sz3 = etree.SubElement(rPr3, qn('w:sz'))
+    sz3.set(qn('w:val'), '24')
+    szCs3 = etree.SubElement(rPr3, qn('w:szCs'))
+    szCs3.set(qn('w:val'), '24')
+    t3 = etree.SubElement(r3, qn('w:t'))
+    t3.text = f'(監造單位使用)                              ' \
+              f'第{page_num}頁共{total_pages}頁   表單編號：E52-{page_num}'
 
 
 def convert(price_path, template_path, output_path,
@@ -256,24 +334,33 @@ def convert(price_path, template_path, output_path,
     idx = 0
     page_num = 0
 
-    while idx < len(items):
-        if 0 < max_pages <= page_num:
+    # 預先計算每頁可放組數與總頁數
+    page_plan = []
+    tmp_idx = 0
+    while tmp_idx < len(items):
+        if 0 < max_pages <= len(page_plan):
             break
+        acc_h = 0
+        pairs = 0
+        for pi in range(len(items) - tmp_idx):
+            h = pair_heights[tmp_idx + pi]
+            if acc_h + h > DATA_AVAIL_TWIP - HEADER_H_TWIP and pairs > 0:
+                break
+            acc_h += h
+            pairs += 1
+        if pairs == 0:
+            break
+        page_plan.append(pairs)
+        tmp_idx += pairs
+
+    total_pages = len(page_plan)
+    page_num = 0
+
+    for page_num, pairs_this_page in enumerate(page_plan):
         if page_num > 0:
             add_page_break(body)
 
-        # 計算此頁可放多少組
-        acc_h = 0
-        pairs_this_page = 0
-        for pi in range(len(items) - idx):
-            h = pair_heights[idx + pi]
-            if acc_h + h > DATA_AVAIL_TWIP and pairs_this_page > 0:
-                break
-            acc_h += h
-            pairs_this_page += 1
-
-        if pairs_this_page == 0:
-            break
+        add_header(body, page_num + 1, total_pages)
 
         # 建立表格
         tbl = etree.SubElement(body, qn('w:tbl'))
@@ -329,7 +416,7 @@ def convert(price_path, template_path, output_path,
             first_pair = False
             idx += 1
 
-        page_num += 1
+    page_num = total_pages
 
     # 補回頁面設定
     body.append(etree.SubElement(body, qn('w:p')))
