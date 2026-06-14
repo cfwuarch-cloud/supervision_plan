@@ -43,19 +43,26 @@
 
 ```
 supervision_plan/
-├── 02_成德-詳細價目表.xlsx        # 詳細價目表母本
-├── table5.1_converter/            # 表5.1 材料送審管制總表轉換
-│   ├── convert_5.1.py             #   主程式
-│   ├── SCOPE_5.1.md               #   計畫說明
-│   ├── 表5.1.docx                 #   模板
-│   └── 表5.1_完成13.docx          #   輸出範例
-├── table5.2_converter/            # 表5.2 檢(試)驗管制總表轉換
-│   ├── convert_5.2.py             #   主程式
-│   ├── SCOPE_5.2.md               #   計畫說明
-│   ├── 表5.2.docx                 #   模板
-│   └── 表5.2_完成_test_4.docx     #   輸出範例
+├── data/                          # 輸入資料（詳細價目表母本）
+│   └── 02_成德-詳細價目表.xlsx
+├── tables/                        # 各表格轉換模組（可擴充）
+│   ├── table5.1/                  #   表5.1 材料送審管制總表
+│   │   ├── convert_5.1.py         #     主程式
+│   │   ├── SCOPE_5.1.md           #     計畫說明
+│   │   ├── 表5.1.docx             #     模板
+│   │   └── 表5.1_完成13.docx      #     輸出範例
+│   └── table5.2/                  #   表5.2 檢(試)驗管制總表
+│       ├── convert_5.2.py         #     主程式
+│       ├── SCOPE_5.2.md           #     計畫說明
+│       ├── 表5.2.docx             #     模板
+│       └── 表5.2_完成_test_4.docx #     輸出範例
+├── common/                        # 共用元件（docx helper、樣式等）
+├── output/                        # 輸出檔案（自動建立，已 gitignore）
+├── tools/                         # 輔助工具
+│   └── check_pages.py             #   估算 docx 頁數
 ├── AGENTS.md                      # 本檔 — AI 行為指南
-└── REQUIREMENTS.md                # 依賴套件說明
+├── README.md                      # 專案說明
+└── requirements.txt               # 依賴套件
 ```
 
 ---
@@ -94,11 +101,14 @@ python -X utf8 tools/backup.py -p .
 
 ```bash
 # 表5.1 材料送審管制總表
-python -X utf8 table5.1_converter/convert_5.1.py --exclude-units 式 工
+python -X utf8 tables/table5.1/convert_5.1.py --exclude-units 式 工
 
 # 表5.2 檢(試)驗管制總表（測試模式）
-python -X utf8 table5.2_converter/convert_5.2.py --test-num 1 --exclude-units 工
+python -X utf8 tables/table5.2/convert_5.2.py --test-num 1 --exclude-units 工
 
 # 表5.2 正式輸出
-python -X utf8 table5.2_converter/convert_5.2.py -o output.docx
+python -X utf8 tables/table5.2/convert_5.2.py -o output/表5.2_完成.docx
+
+# 檢查 docx 頁數
+python -X utf8 tools/check_pages.py output/表5.2_完成.docx
 ```

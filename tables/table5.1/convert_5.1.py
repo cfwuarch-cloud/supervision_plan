@@ -21,7 +21,7 @@
   - Pillow>=9.0.0,<12.0.0
 
 使用方法：
-  python -X utf8 supervision_plan/table5.1_converter/convert_5.1.py -p 價目表.xlsx -t 表5.1.docx -o 輸出.docx
+  python -X utf8   tables/table5.1/convert_5.1.py -p data/價目表.xlsx -t tables/table5.1/表5.1.docx -o output/輸出.docx
 
 功能說明：
   1. 讀取詳細價目表（excel），依項次壹.三.1 之後、排除單位「式」「工」
@@ -33,9 +33,9 @@
   7. 每頁之間插入分頁符號
 
 參數說明：
-  -p, --price   詳細價目表 Excel 路徑（預設：../02_成德-詳細價目表.xlsx）
-  -t, --template  表5模板 docx 路徑（預設：../表5.1.docx）
-  -o, --output   輸出 docx 路徑（預設：../表5_完成10.docx）
+  -p, --price   詳細價目表 Excel 路徑（預設：../../data/02_成德-詳細價目表.xlsx）
+  -t, --template  表5模板 docx 路徑（預設：./表5.1.docx）
+  -o, --output   輸出 docx 路徑（預設：../../output/表5_完成10.docx）
   --exclude-units  排除單位（預設：式 工）
   --max-pairs  每頁最多資料組數（預設：20）
 """
@@ -478,7 +478,7 @@ def main():
     )
     parser.add_argument(
         '-p', '--price',
-        default='./02_成德-詳細價目表.xlsx',
+        default='../../data/02_成德-詳細價目表.xlsx',
         help='詳細價目表 Excel 路徑',
     )
     parser.add_argument(
@@ -488,7 +488,7 @@ def main():
     )
     parser.add_argument(
         '-o', '--output',
-        default='../Vbaoffice/表5_完成10.docx',
+        default='../../output/表5_完成10.docx',
         help='輸出 docx 路徑',
     )
     parser.add_argument(
