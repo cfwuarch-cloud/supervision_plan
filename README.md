@@ -15,6 +15,7 @@ supervision_plan/
 │   ├── table5.3/                  # 表5.3 材料設備品質抽驗紀錄表
 │   ├── table5.4/                  # 表5.4 抽驗結果通知單
 │   └── table5.5/                  # 表5.5 不合格改善追蹤表
+│   └── table7.1/                  # 圖7.1 輕隔間施工抽查流程圖
 ├── common/                        # 共用元件
 │   ├── __init__.py                #   空模組標記
 │   ├── docx_utils.py              #   docx 共用工具（列高計算、分頁規劃、標題列合併）
@@ -79,6 +80,12 @@ python -X utf8 tables/table5.4/convert_5.4.py --exclude-units 式 工
 
 ```bash
 python -X utf8 tables/table5.5/convert_5.5.py --exclude-units 式 工
+```
+
+### 圖7.1 輕隔間施工抽查流程圖
+
+```bash
+python -X utf8 tables/table7.1/convert_7.1.py
 ```
 
 ### 檢查 docx 頁數

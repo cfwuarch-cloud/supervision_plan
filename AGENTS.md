@@ -56,6 +56,7 @@ supervision_plan/
 │       ├── SCOPE_5.2.md           #     計畫說明
 │       ├── 表5.2.docx             #     模板
 │       └── 表5.2_完成_test_4.docx #     輸出範例
+│   └── table7.1/                  #   圖7.1 輕隔間施工抽查流程圖
 ├── common/                        # 共用元件
 │   ├── __init__.py                #   空模組標記
 │   ├── docx_utils.py              #   docx 共用工具（列高計算、分頁規劃、標題列合併）
@@ -117,6 +118,9 @@ python -X utf8 tables/table5.2/convert_5.2.py --test-num 1 --exclude-units 工
 
 # 表5.2 正式輸出
 python -X utf8 tables/table5.2/convert_5.2.py -o output/表5.2_完成.docx
+
+# 圖7.1 輕隔間施工抽查流程圖
+python -X utf8 tables/table7.1/convert_7.1.py
 
 # 檢查 docx 頁數
 python -X utf8 tools/check_pages.py output/表5.2_完成.docx

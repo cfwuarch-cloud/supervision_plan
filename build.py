@@ -50,6 +50,7 @@ def main():
     run_convert('tables/table5.3/convert_5.3.py', '表5.3 材料設備品質抽驗紀錄表')
     run_convert('tables/table5.4/convert_5.4.py', '表5.4 抽驗結果通知單')
     run_convert('tables/table5.5/convert_5.5.py', '表5.5 不合格改善追蹤表')
+    run_convert('tables/table7.1/convert_7.1.py', '圖7.1 輕隔間施工抽查流程圖')
 
 
 if __name__ == '__main__':
