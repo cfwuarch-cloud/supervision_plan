@@ -112,3 +112,25 @@ python -X utf8 tables/table5.2/convert_5.2.py -o output/表5.2_完成.docx
 # 檢查 docx 頁數
 python -X utf8 tools/check_pages.py output/表5.2_完成.docx
 ```
+
+## 行高與排版通則（文件防裁切實戰）
+
+### 核心方案：`atLeast` trHeight + `exact` 段落行高
+- **trHeight hRule**：使用 `atLeast`（列可自動擴展防止裁切）
+- **段落行距**：使用 `exact`（文字高度固定，與 LINE_H_TWIP 同值）
+- `exact` trHeight 會裁切文字；`atLeast` trHeight 無 `exact` 段落會讓 Word 自動擴展導致頁數暴增
+- 兩者搭配才能兼顧頁數可控 + 文字不裁切
+
+### 重要常數
+| 參數 | 說明 | 值 |
+|------|------|-----|
+| LINE_H_TWIP | 每行文字高 | 240 twip（10pt 標楷體） |
+| CELL_TOP_TWIP | 儲存格頂部餘裕 | 0（tcMar=0 時無需） |
+| MIN_ROW_H_TWIP | 列高下限 | 226 twip |
+| tcMar | 儲存格邊距 | 全部設 0（防預設值吃空間） |
+
+### 頁數校準要點
+- `DATA_AVAIL_TWIP`：總可用高度（含表頭），取值約 10600–11170
+- `HEADER_H_TWIP`：表頭佔用（三列 + 三段段落），5.1=2600, 5.2=1100
+- 資料區高度 = `DATA_AVAIL_TWIP - HEADER_H_TWIP`
+- 若 Word 頁數 > 計算值，先檢查 `tblW` 的 `w:w` 是否與模板一致（5.1=5289, 5.2=4771）
