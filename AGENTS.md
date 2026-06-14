@@ -56,7 +56,10 @@ supervision_plan/
 │       ├── SCOPE_5.2.md           #     計畫說明
 │       ├── 表5.2.docx             #     模板
 │       └── 表5.2_完成_test_4.docx #     輸出範例
-├── common/                        # 共用元件（docx helper、樣式等）
+├── common/                        # 共用元件
+│   ├── __init__.py                #   空模組標記
+│   ├── docx_utils.py              #   docx 共用工具（列高計算、分頁規劃、標題列合併）
+│   └── docx_table.py              #   通用表格元件（add_cell：黑實線框、tcMar=0、vMerge、vAlign）
 ├── output/                        # 輸出檔案（自動建立，已 gitignore）
 ├── tools/                         # 輔助工具
 │   └── check_pages.py             #   估算 docx 頁數

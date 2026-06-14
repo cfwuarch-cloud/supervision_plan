@@ -15,9 +15,10 @@ supervision_plan/
 │   ├── table5.3/                  # 表5.3 材料設備品質抽驗紀錄表
 │   ├── table5.4/                  # 表5.4 抽驗結果通知單
 │   └── table5.5/                  # 表5.5 不合格改善追蹤表
-├── common/
-│   ├── docx_utils.py              # docx 共用工具（列高、合併、分頁）
-│   └── docx_table.py              # 通用表格元件（黑實線框、段落格式、tcMar=0）
+├── common/                        # 共用元件
+│   ├── __init__.py                #   空模組標記
+│   ├── docx_utils.py              #   docx 共用工具（列高計算、分頁規劃、標題列合併）
+│   └── docx_table.py              #   通用表格元件（add_cell：黑實線框、tcMar=0、vMerge、vAlign）
 ├── tools/
 │   ├── input_project.py           # 工程基本資料輸入（CLI/GUI）
 │   ├── calibrate_row_height.py    # 列高校準工具
