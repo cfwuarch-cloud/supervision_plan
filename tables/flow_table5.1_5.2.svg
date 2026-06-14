@@ -1,0 +1,151 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 2200" font-family="'Noto Sans TC','Microsoft JhengHei',sans-serif" font-size="13">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0,0 L10,5 L0,10 Z" fill="#555"/>
+    </marker>
+    <style>
+      .box { fill:#fff; stroke:#333; stroke-width:1.5; rx:6; ry:6; }
+      .box-title { fill:#e8f0fe; stroke:#1a73e8; stroke-width:1.5; rx:6; ry:6; }
+      .box-data { fill:#fef7e0; stroke:#f9ab00; stroke-width:1.5; rx:6; ry:6; }
+      .box-table { fill:#e6f4ea; stroke:#34a853; stroke-width:1.5; rx:6; ry:6; }
+      .box-loop { fill:#fce8e6; stroke:#ea4335; stroke-width:1.5; rx:6; ry:6; stroke-dasharray:6,3; }
+      .text-title { font-weight:bold; fill:#1a73e8; font-size:14; }
+      .text-data { fill:#e37400; }
+      .text-table { fill:#1e8e3e; }
+      .text-loop { fill:#d93025; }
+      .sub { font-size:11; fill:#666; }
+      .code { font-family:'Consolas','Courier New',monospace; font-size:11; fill:#333; }
+      .line { stroke:#555; stroke-width:1.5; fill:none; }
+    </style>
+  </defs>
+
+  <!-- ===== Step 1: CLI ===== -->
+  <rect x="180" y="20" width="520" height="80" class="box-title"/>
+  <text x="440" y="45" text-anchor="middle" class="text-title">1. CLI 參數解析</text>
+  <text x="440" y="63" text-anchor="middle" class="code" font-size="11">-p 價目表.xlsx  -t 模板.docx  -o 輸出.docx</text>
+  <text x="440" y="80" text-anchor="middle" class="code" font-size="11">--exclude-units 式 工  --test-num N  --max-items</text>
+  <line x1="440" y1="100" x2="440" y2="130" class="line" marker-end="url(#arrow)"/>
+
+  <!-- ===== Step 2: Load price sheet ===== -->
+  <rect x="180" y="130" width="520" height="130" class="box-data"/>
+  <text x="440" y="155" text-anchor="middle" class="text-title" fill="#e37400">2. 載入價目表</text>
+  <text x="200" y="175" class="code">pandas.read_excel → 逐列篩選</text>
+  <text x="200" y="193" class="sub">▪ 起點：壹.三.1 之後</text>
+  <text x="200" y="210" class="sub">▪ 項次須以壹.開頭</text>
+  <text x="200" y="227" class="sub">▪ 排除單位 (式/工) 及 小計/合計/總價</text>
+  <text x="200" y="244" class="sub">▪ clean_text() 移除斷行/多餘空格</text>
+  <text x="440" y="260" text-anchor="middle" class="code" font-size="11">→ items = [(item, name, qty_unit), ...]</text>
+  <line x1="440" y1="260" x2="440" y2="290" class="line" marker-end="url(#arrow)"/>
+
+  <!-- ===== Step 3: Line height calculation ===== -->
+  <rect x="180" y="290" width="520" height="120" class="box"/>
+  <text x="440" y="315" text-anchor="middle" class="text-title">3. 行數計算（每項材料）</text>
+  <text x="200" y="335" class="code">Pillow ImageFont.truetype('kaiu',10)</text>
+  <text x="200" y="355" class="sub">calc_name_lines(name)</text>
+  <text x="200" y="372" class="sub">  → bbox = draw.textbbox() → w_px → w_twip</text>
+  <text x="200" y="389" class="sub">  → max(1, ceil(w_twip / C1_WIDTH_TWIP))</text>
+  <text x="200" y="406" class="sub">calc_row_height(n) = max(226, n × 240 + 0)</text>
+  <line x1="440" y1="410" x2="440" y2="440" class="line" marker-end="url(#arrow)"/>
+
+  <!-- ===== Step 4: Page plan ===== -->
+  <rect x="180" y="440" width="520" height="130" class="box-title"/>
+  <text x="440" y="465" text-anchor="middle" class="text-title">4. 分頁規劃</text>
+  <text x="200" y="485" class="sub">逐組累加 pair_heights</text>
+  <text x="200" y="502" class="sub">直到超過 DATA_AVAIL_TWIP − HEADER_H_TWIP</text>
+
+  <!-- 5.1 table -->
+  <rect x="210" y="515" width="215" height="46" rx="4" fill="#e8f0fe" stroke="#1a73e8" stroke-width="1"/>
+  <text x="317" y="532" text-anchor="middle" class="text-title">5.1</text>
+  <text x="317" y="549" text-anchor="middle" class="code" font-size="11">11170 − 2600 = 8570 twip → 15 頁</text>
+
+  <!-- 5.2 table -->
+  <rect x="455" y="515" width="215" height="46" rx="4" fill="#e8f0fe" stroke="#1a73e8" stroke-width="1"/>
+  <text x="562" y="532" text-anchor="middle" class="text-title">5.2</text>
+  <text x="562" y="549" text-anchor="middle" class="code" font-size="11">10600 − 1100 = 9500 twip → 20 頁</text>
+
+  <text x="440" y="575" text-anchor="middle" class="code" font-size="11">→ page_plan = [pairs_per_page, ...]</text>
+  <line x1="440" y1="570" x2="440" y2="600" class="line" marker-end="url(#arrow)"/>
+
+  <!-- ===== Step 5: Load template ===== -->
+  <rect x="180" y="600" width="520" height="70" class="box-data"/>
+  <text x="440" y="625" text-anchor="middle" class="text-title" fill="#e37400">5. 載入模板</text>
+  <text x="200" y="645" class="code">Document(template_path)</text>
+  <text x="200" y="662" class="sub">提取 title_xml (前2列) + sectPr → 清空 body</text>
+  <line x1="440" y1="670" x2="440" y2="700" class="line" marker-end="url(#arrow)"/>
+
+  <!-- ===== Step 6: Per-page loop ===== -->
+  <rect x="80" y="700" width="720" height="840" class="box-loop"/>
+  <text x="440" y="722" text-anchor="middle" class="text-title" fill="#d93025">6. 輸出每一頁 ⟳ page_plan 迴圈</text>
+
+  <!-- 6a -->
+  <rect x="110" y="735" width="660" height="50" class="box"/>
+  <text x="125" y="755" class="text-title">a.</text>
+  <text x="145" y="755" class="sub">分頁符號（page 2+）</text>
+  <text x="145" y="773" class="code" font-size="11">&lt;w:br w:type="page"/&gt;</text>
+
+  <!-- 6b -->
+  <rect x="110" y="795" width="660" height="90" class="box"/>
+  <text x="125" y="815" class="text-title">b.</text>
+  <text x="145" y="815" class="sub">三行表頭（add_header）</text>
+  <text x="145" y="833" class="code" font-size="11">P1: 表5-N (14pt, 粗體, 置中, line=480 exact)</text>
+  <text x="145" y="850" class="code" font-size="11">P2: 工程名稱：... (12pt, 靠左)</text>
+  <text x="145" y="867" class="code" font-size="11">P3: 第N頁共M頁 (12pt, 靠左, atLeast 240)</text>
+
+  <!-- 6c -->
+  <rect x="110" y="895" width="660" height="70" class="box"/>
+  <text x="125" y="915" class="text-title">c.</text>
+  <text x="145" y="915" class="sub">建立表格（etree.SubElement）</text>
+  <text x="145" y="933" class="code" font-size="11">tblPr (w:w=5289/4771 pct)  →  tblGrid (COL_W)  →  title_xml (deepcopy)</text>
+
+  <!-- 6d - per pair loop -->
+  <rect x="130" y="975" width="620" height="225" rx="4" fill="#fce8e6" stroke="#ea4335" stroke-width="1" stroke-dasharray="4,2"/>
+  <text x="440" y="995" text-anchor="middle" class="text-title" fill="#d93025">d. 資料列迴圈（per pair）</text>
+
+  <text x="150" y="1015" class="sub">odd_text → tr1（trHeight=atLeast）</text>
+  <text x="170" y="1033" class="code" font-size="11">add_cell(): tcMar=0, 黑實線框, 段落 exact 240, vAlign=center</text>
+
+  <text x="150" y="1055" class="sub">even_text → tr2（trHeight=atLeast）</text>
+
+  <!-- 5.1 fills -->
+  <rect x="160" y="1068" width="280" height="80" rx="4" fill="#fff" stroke="#1a73e8" stroke-width="1"/>
+  <text x="300" y="1085" text-anchor="middle" class="text-title">5.1 填入</text>
+  <text x="175" y="1103" class="code" font-size="11">C4 = 施作前14日</text>
+  <text x="175" y="1120" class="code" font-size="11">C5 = 否</text>
+  <text x="175" y="1137" class="code" font-size="11">C7 = V    C8 = V</text>
+
+  <!-- 5.2 fills -->
+  <rect x="460" y="1068" width="280" height="80" rx="4" fill="#fff" stroke="#34a853" stroke-width="1"/>
+  <text x="600" y="1085" text-anchor="middle" class="text-title">5.2 填入</text>
+  <text x="475" y="1105" class="code" font-size="11">C5 = 進場時至少一次</text>
+  <text x="475" y="1122" class="code" font-size="11">　（頁首）/ 至少一次（其餘）</text>
+
+  <!-- vMerge -->
+  <text x="150" y="1175" class="sub">e. vMerge 奇偶列合併（DAT_MERGE）</text>
+  <text x="170" y="1193" class="code" font-size="11">5.1: C0/C2/C3/C6/C7~C12/C14</text>
+
+  <!-- arrow from 6 to next page -->
+  <line x1="440" y1="1540" x2="440" y2="1570" class="line" marker-end="url(#arrow)"/>
+
+  <!-- ===== Step 7: Save ===== -->
+  <rect x="180" y="1570" width="520" height="70" class="box-data"/>
+  <text x="440" y="1595" text-anchor="middle" class="text-title" fill="#e37400">7. 結尾 + 存檔</text>
+  <text x="200" y="1615" class="code">append sectPr → doc.save(output_path)</text>
+
+  <!-- loop feedback -->
+  <path d="M80,1100 L40,1100 L40,370 L180,370" class="line" stroke-dasharray="5,3" stroke="#ea4335" marker-end="url(#arrow)"/>
+  <text x="50" y="720" text-anchor="middle" class="text-loop" font-size="11" transform="rotate(-90,50,720)">下一頁</text>
+
+  <!-- Legend -->
+  <rect x="180" y="1680" width="520" height="90" rx="6" fill="#f8f9fa" stroke="#ccc" stroke-width="1"/>
+  <text x="440" y="1700" text-anchor="middle" class="text-title" font-size="12">圖例</text>
+  <rect x="195" y="1710" width="16" height="16" rx="3" fill="#e8f0fe" stroke="#1a73e8" stroke-width="1"/>
+  <text x="218" y="1723" class="sub">計算/規劃</text>
+  <rect x="320" y="1710" width="16" height="16" rx="3" fill="#fef7e0" stroke="#f9ab00" stroke-width="1"/>
+  <text x="343" y="1723" class="sub">資料處理</text>
+  <rect x="460" y="1710" width="16" height="16" rx="3" fill="#e6f4ea" stroke="#34a853" stroke-width="1"/>
+  <text x="483" y="1723" class="sub">表格/模板</text>
+  <rect x="610" y="1710" width="16" height="16" rx="3" stroke="#ea4335" stroke-width="1" stroke-dasharray="4,2" fill="none"/>
+  <text x="633" y="1723" class="sub">迴圈</text>
+
+  <text x="440" y="1760" text-anchor="middle" class="sub" font-size="11">5.1: 181 項 → 15 頁　｜　5.2: 181 項 → 20 頁</text>
+</svg>
