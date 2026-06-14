@@ -88,6 +88,12 @@ powershell -Command "[Console]::OutputEncoding = [System.Text.Encoding]::UTF8; W
 ```
 - 執行 Python 腳本時加 `-X utf8` 參數
 
+### SVG 流程圖規範
+- 所有流程框內**最後一行文字**與**框底部**的距離統一為 **14px**
+- 計算方式：`box_bottom = last_text_y + 14`
+- 箭頭起點 `y1` 等同於框底部，`y2 = y1 + 30`（下一框起點）
+- 此規則適用於 `tables/flow_*.svg` 所有流程圖
+
 ### 備份作業
 - 同步 GitHub 遠端與本機檔案備份
 - 本機備份：排除 `.git`，壓縮 zip，格式 `專案名_YYYYMMDDHHMMSS.zip`，存放桌面

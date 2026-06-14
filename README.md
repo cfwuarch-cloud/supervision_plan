@@ -86,6 +86,10 @@ python -X utf8 tables/table5.5/convert_5.5.py --exclude-units 式 工
 python -X utf8 tools/check_pages.py output/表5.2_完成.docx
 ```
 
+## 執行流程
+
+![轉換流程圖](tables/flow_table5.1_5.2.svg)
+
 ## 行高機制（適用 5.1、5.2）
 
 | 參數 | 說明 | 值 |
