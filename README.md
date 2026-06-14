@@ -1,34 +1,29 @@
 # 監造計畫書表格輔助工具
 
-產製公共工程監造計畫書所需之表格，目前支援：
-
-- **表5.1** — 材料送審管制總表
-- **表5.2** — 檢(試)驗管制總表
-
-從詳細價目表（xlsx）自動轉換為排版完成的 Word 表格文件，減少手動繕打錯誤與重複工時。
+產製公共工程監造計畫書所需之表格，從詳細價目表（xlsx）自動轉換為排版完成的 Word 文件。
 
 ## 目錄結構
 
 ```
 supervision_plan/
-├── data/                        # 輸入資料（詳細價目表母本）
-│   └── 02_成德-詳細價目表.xlsx
-├── tables/                      # 各表格轉換模組（可擴充）
-│   ├── table5.1/                #   表5.1 材料送審管制總表
-│   │   ├── convert_5.1.py       #     主程式
-│   │   ├── 表5.1.docx           #     模板
-│   │   └── 表5.1_完成13.docx    #     輸出範例
-│   └── table5.2/                #   表5.2 檢(試)驗管制總表
-│       ├── convert_5.2.py       #     主程式
-│       ├── 表5.2.docx           #     模板
-│       └── 表5.2_完成_test_4.docx #  輸出範例
-├── common/                      # 共用元件（docx helper、樣式等）
-├── output/                      # 輸出檔案（自動建立，已 gitignore）
-├── tools/                       # 輔助工具
-│   └── check_pages.py           #   估算 docx 頁數
-├── requirements.txt             # Python 套件相依
-├── README.md                    # 本檔
-└── AGENTS.md                    # AI 行為指南
+├── data/
+│   ├── 02_成德-詳細價目表.xlsx    # 輸入母本
+│   └── project_info.json          # 工程基本資料（input_project.py 產出）
+├── tables/                        # 各表格轉換模組
+│   ├── table5.1/                  # 表5.1 材料送審管制總表
+│   └── table5.2/                  # 表5.2 檢(試)驗管制總表（v2.0）
+├── common/
+│   ├── docx_utils.py              # docx 共用工具（列高、合併、分頁）
+│   └── docx_table.py              # 通用表格元件（黑實線框、段落格式）
+├── tools/
+│   ├── input_project.py           # 工程基本資料輸入（CLI/GUI）
+│   ├── check_pages.py             # docx 頁數估算
+│   └── backup.py                  # 備份工具
+├── output/                        # 輸出 docx（已 gitignore）
+├── build.py                       # 整本產製入口
+├── AGENTS.md                      # AI 行為指南
+├── requirements.txt
+└── README.md
 ```
 
 ## 安裝相依套件
@@ -39,24 +34,28 @@ pip install -r requirements.txt
 
 ## 使用方法
 
+### 工程基本資料輸入
+
+```bash
+python -X utf8 tools/input_project.py           # GUI 模式
+python -X utf8 tools/input_project.py --cli     # CLI 模式
+python -X utf8 tools/input_project.py --test    # 測試產出 Word
+```
+
+### 表5.2 檢(試)驗管制總表（v2.0）
+
+```bash
+# 測試（1 頁）
+python -X utf8 tables/table5.2/convert_5.2.py --test-num 1 --exclude-units 工 式
+
+# 正式輸出
+python -X utf8 tables/table5.2/convert_5.2.py -o output/表5.2_完成.docx
+```
+
 ### 表5.1 材料送審管制總表
 
 ```bash
 python -X utf8 tables/table5.1/convert_5.1.py --exclude-units 式 工
-```
-
-### 表5.2 檢(試)驗管制總表
-
-測試模式（僅輸出前 N 筆）：
-
-```bash
-python -X utf8 tables/table5.2/convert_5.2.py --test-num 1 --exclude-units 工
-```
-
-正式輸出：
-
-```bash
-python -X utf8 tables/table5.2/convert_5.2.py -o output/表5.2_完成.docx
 ```
 
 ### 檢查 docx 頁數
@@ -68,6 +67,6 @@ python -X utf8 tools/check_pages.py output/表5.2_完成.docx
 ## 技術棧
 
 - **Python** — 主程式語言
-- **pandas / openpyxl** — 讀取詳細價目表 xlsx
-- **python-docx / lxml** — 產生與操作 Word 文件
-- **Pillow** — 表格圖片處理（蓋章用）
+- **pandas / openpyxl** — 讀取詳細價目表
+- **python-docx / lxml** — 產出 Word 文件
+- **Pillow** — 文字寬度測量（行數計算）
