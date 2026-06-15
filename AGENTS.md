@@ -109,6 +109,7 @@ python -X utf8 tools/backup.py -p .
 
 ## 常用指令
 
+### 表格/圖形轉換
 ```bash
 # 表5.1 材料送審管制總表
 python -X utf8 tables/table5.1/convert_5.1.py --exclude-units 式 工
@@ -124,6 +125,36 @@ python -X utf8 tables/table7.1/convert_7.1.py
 
 # 檢查 docx 頁數
 python -X utf8 tools/check_pages.py output/表5.2_完成.docx
+```
+
+### 監造計畫各章節腳本
+```bash
+# 前言
+python -X utf8 tables/foreword/convert_foreword.py
+
+# Ch1 監造範圍（--level 控制價目表階層深度）
+python -X utf8 tables/ch1/convert_1.py --level 4
+
+# Ch2 監造組織及權責分工
+python -X utf8 tables/ch2/convert_2.py
+
+# Ch3 品質計畫審查作業程序
+python -X utf8 tables/ch3/convert_3.py
+
+# Ch4 施工計畫審查作業程序
+python -X utf8 tables/ch4/convert_4.py
+
+# Ch6 設備功能運轉測試抽驗程序及標準
+python -X utf8 tables/ch6/convert_6.py
+
+# Ch8 品質稽核
+python -X utf8 tables/ch8/convert_8.py
+
+# Ch9 文件紀錄管理系統
+python -X utf8 tables/ch9/convert_9.py
+
+# 合併為完整監造計畫書
+python -X utf8 tools/merge_docx.py
 ```
 
 ## 行高與排版通則（文件防裁切實戰）
