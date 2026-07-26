@@ -8,6 +8,7 @@
 修正歷程：
   v1.0  2026/06/13  初始版本（比照表5.1架構，10欄位）
   v2.0  2026/06/14  重寫資料列建立方式，改用 etree.SubElement 避免範本屬性導致 Word 頁數異常
+  v2.1  2026/07/26  C9(備註/歸檔編號) 標題列與資料列改為垂直合併（奇偶列合一欄）
 
 作者：OpenCode Assistant / cfwuarch
 版本：v2.0
@@ -127,17 +128,24 @@ def calc_row_height(n_lines):
     return max(MIN_ROW_H_TWIP, n_lines * LINE_H_TWIP + CELL_TOP_TWIP)
 
 
-def load_price_sheet(path, exclude_units=None):
+def load_price_sheet(path, exclude_units=None, sheet_name='Table 1',
+                     col_unit=6, col_qty=7, start_mark='壹.三.1',
+                     item_prefix='壹.', section_prefixes=None,
+                     keep_unit_items=None, exclude_items=None):
     if exclude_units is None:
         exclude_units = {'工'}
-    df = pd.read_excel(path, sheet_name='Table 1')
+    if keep_unit_items is None:
+        keep_unit_items = set()
+    if exclude_items is None:
+        exclude_items = set()
+    df = pd.read_excel(path, sheet_name=sheet_name)
     c0 = df.columns[0]
     c1 = df.columns[1]
-    cu = df.columns[6]
-    cq = df.columns[7]
+    cu = df.columns[col_unit]
+    cq = df.columns[col_qty]
 
     items = []
-    started = False
+    started = not start_mark
     for _, row in df.iterrows():
         item = clean_text(str(row[c0]))
         name = clean_text(str(row[c1]))
@@ -147,19 +155,24 @@ def load_price_sheet(path, exclude_units=None):
         name = name.replace('⑤', '窗')
         unit = unit.replace('⑤', '窗')
 
-        if '壹.三.1' in item:
+        if start_mark and start_mark in item:
             started = True
         if not started:
             continue
-        if not item.startswith('壹.'):
+        if item_prefix and not item.startswith(item_prefix):
             continue
+        if section_prefixes:
+            if not any(item.startswith(p) for p in section_prefixes):
+                continue
         if not unit or unit == 'nan':
             continue
-        if unit in exclude_units:
+        if unit in exclude_units and not any(item.startswith(k) for k in keep_unit_items):
             continue
         if any(k in name for k in ['小計', '合計', '總價']):
             continue
         if pd.isna(qty):
+            continue
+        if item in exclude_items:
             continue
 
         if isinstance(qty, float) and qty == int(qty):
@@ -297,8 +310,17 @@ def add_header(body, page_num, total_pages):
 
 
 def convert(price_path, template_path, output_path,
-            exclude_units=None, max_pairs=20, max_pages=0):
-    items = load_price_sheet(price_path, exclude_units)
+            exclude_units=None, max_pairs=20, max_pages=0,
+            sheet_name='Table 1', col_unit=6, col_qty=7,
+            start_mark='壹.三.1', item_prefix='壹.',
+            section_prefixes=None, keep_unit_items=None,
+            exclude_items=None, project_name=None):
+    global PROJECT_NAME
+    if project_name:
+        PROJECT_NAME = project_name
+    items = load_price_sheet(price_path, exclude_units, sheet_name,
+                             col_unit, col_qty, start_mark, item_prefix,
+                             section_prefixes, keep_unit_items, exclude_items)
     print(f'價目表載入：{len(items)} 項')
 
     pair_heights = []
@@ -329,6 +351,17 @@ def convert(price_path, template_path, output_path,
     # 備份標題列與 sectPr
     title_trs = t0._tbl.findall(qn('w:tr'))[:2]
     title_xml = [deepcopy(tr) for tr in title_trs]
+    # 將 C9 (備註/歸檔編號) 標題列改為垂直合併
+    for ri, tr in enumerate(title_xml):
+        tcs = tr.findall(qn('w:tc'))
+        if len(tcs) > 9:
+            tc9 = tcs[9]
+            tcPr = tc9.find(qn('w:tcPr'))
+            if tcPr is None:
+                tcPr = etree.SubElement(tc9, qn('w:tcPr'))
+            vm = etree.SubElement(tcPr, qn('w:vMerge'))
+            if ri == 0:
+                vm.set(qn('w:val'), 'restart')
     sect = body.find(qn('w:sectPr'))
     sect_xml = deepcopy(sect) if sect is not None else None
 
@@ -336,7 +369,7 @@ def convert(price_path, template_path, output_path,
     for child in list(body):
         body.remove(child)
 
-    DAT_MERGE = {0, 3, 5, 7, 8}
+    DAT_MERGE = {0, 3, 5, 7, 8, 9}
     seq = 0
     idx = 0
     page_num = 0
@@ -437,7 +470,7 @@ def convert(price_path, template_path, output_path,
 
 def main():
     parser = argparse.ArgumentParser(
-        description='材料設備檢(試)驗管制總表轉換工具 v2.0')
+        description='材料設備檢(試)驗管制總表轉換工具 v2.1')
     parser.add_argument('-p', '--price', default='../../data/02_成德-詳細價目表.xlsx',
                         help='詳細價目表 Excel 路徑')
     parser.add_argument('-t', '--template', default='./表5.2.docx',
@@ -452,6 +485,24 @@ def main():
                         help='每頁最多資料組數（預設：20）')
     parser.add_argument('--max-pages', type=int, default=0,
                         help='最多頁數（預設：0=不限）')
+    parser.add_argument('--sheet-name', default='Table 1',
+                        help='Excel 工作表名稱（預設：Table 1）')
+    parser.add_argument('--col-unit', type=int, default=6,
+                        help='單位欄 index，0-based（預設：6）')
+    parser.add_argument('--col-qty', type=int, default=7,
+                        help='數量欄 index，0-based（預設：7）')
+    parser.add_argument('--start-mark', default='壹.三.1',
+                        help='資料起點標記項次（預設：壹.三.1，設為空字串則從頭開始）')
+    parser.add_argument('--item-prefix', default='壹.',
+                        help='項次前綴過濾（預設：壹.）')
+    parser.add_argument('--section-prefix', nargs='*', default=None,
+                        help='僅擷取指定前綴之項次（如 甲.參 甲.肆）')
+    parser.add_argument('--keep-unit-items', nargs='*', default=None,
+                        help='保留排除單位之特定項次前綴（如 甲.參.二.1）')
+    parser.add_argument('--exclude-items', nargs='*', default=None,
+                        help='排除特定項次（如 甲.參.一.10）')
+    parser.add_argument('--project-name', default=None,
+                        help='工程名稱（預設使用內建常數）')
 
     args = parser.parse_args()
 
@@ -472,7 +523,16 @@ def main():
     convert(price_path, template_path, output_path,
             exclude_units=set(args.exclude_units),
             max_pairs=args.max_pairs,
-            max_pages=args.max_pages)
+            max_pages=args.max_pages,
+            sheet_name=args.sheet_name,
+            col_unit=args.col_unit,
+            col_qty=args.col_qty,
+            start_mark=args.start_mark,
+            item_prefix=args.item_prefix,
+            section_prefixes=args.section_prefix,
+            keep_unit_items=args.keep_unit_items,
+            exclude_items=set(args.exclude_items) if args.exclude_items else None,
+            project_name=args.project_name)
 
 
 if __name__ == '__main__':
