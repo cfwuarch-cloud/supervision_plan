@@ -24,12 +24,9 @@ from docx.oxml.ns import qn
 
 
 def get_cell_text(tc, width):
-    t = tc.text or ''
-    for sub in tc.iter(qn('w:t')):
-        if sub.text:
-            t += sub.text
+    t = tc.text if tc.text else ''
     t = t.replace('\n', ' ').replace('\r', ' ').strip()
-    if width and len(t) > width:
+    if width > 0 and len(t) > width:
         t = t[:width - 1] + '~'
     return t
 
@@ -45,6 +42,22 @@ def get_vmerge(tc):
     return 'M' if val == 'restart' else 'm'
 
 
+def parse_row_range(row_range_str, max_rows):
+    row_start, row_end = 0, max_rows
+    if not row_range_str:
+        return row_start, row_end
+    try:
+        parts = row_range_str.split('-')
+        if parts[0]:
+            row_start = max(0, int(parts[0]))
+        if len(parts) > 1 and parts[1]:
+            row_end = min(max_rows, int(parts[1]) + 1)
+    except ValueError:
+        print(f'警告：列範圍格式錯誤 "{row_range_str}"，顯示全部列。')
+        return 0, max_rows
+    return row_start, row_end
+
+
 def show_table():
     parser = argparse.ArgumentParser(description='Word 表格內容檢視工具')
     parser.add_argument('-i', '--input', required=True, help='輸入 docx 路徑')
@@ -57,7 +70,16 @@ def show_table():
         print(f'錯誤：檔案不存在 {args.input}')
         sys.exit(1)
 
-    doc = docx.Document(args.input)
+    try:
+        doc = docx.Document(args.input)
+    except Exception as e:
+        print(f'錯誤：無法讀取檔案 ({e})')
+        sys.exit(1)
+
+    if not doc.tables:
+        print('錯誤：該檔案中沒有找到任何表格。')
+        sys.exit(1)
+
     if args.page < 1 or args.page > len(doc.tables):
         print(f'錯誤：表格編號 {args.page} 超出範圍（1~{len(doc.tables)}）')
         sys.exit(1)
@@ -65,13 +87,11 @@ def show_table():
     tbl = doc.tables[args.page - 1]
     trs = tbl._tbl.findall(qn('w:tr'))
 
-    row_start, row_end = 0, len(trs)
-    if args.row_range:
-        parts = args.row_range.split('-')
-        if parts[0]:
-            row_start = int(parts[0])
-        if len(parts) > 1 and parts[1]:
-            row_end = int(parts[1]) + 1
+    if not trs:
+        print(f'表格 {args.page} 是空的。')
+        return
+
+    row_start, row_end = parse_row_range(args.row_range, len(trs))
 
     max_cols = 0
     for tr in trs[row_start:row_end]:
@@ -80,13 +100,12 @@ def show_table():
             max_cols = n
 
     print()
-    print(f'表格 {args.page}  R{row_start}~R{row_end-1}  |  {len(trs[row_start:row_end])}列 x {max_cols}欄')
-    print(f'M=合併起始  m=合併延續')
-    print()
+    print(f'表格 {args.page}  R{row_start}~R{row_end-1}  |  {row_end - row_start}列 x {max_cols}欄')
+    print('M=合併起始  m=合併延續')
+    print('=' * 60)
 
-    for ri, tr in enumerate(trs):
-        if ri < row_start or ri >= row_end:
-            continue
+    for ri in range(row_start, row_end):
+        tr = trs[ri]
         tcs = tr.findall(qn('w:tc'))
         parts = [f'R{ri:02d}']
         for ci in range(max_cols):
@@ -97,9 +116,9 @@ def show_table():
                 parts.append(f'{tag}:{txt}')
             else:
                 parts.append(f'C{ci}:')
-        print(' | '.join(parts))
-        if ri < row_end - 1:
-            print('-' * len(' | '.join(parts)))
+        line = ' | '.join(parts)
+        print(line)
+        print('-' * min(len(line), 100))
 
     print()
 
